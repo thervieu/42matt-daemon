@@ -58,6 +58,9 @@ void usage() {
     printf("If already launched once before, you will receive an error. This is normal behaviour\n");
 }
 
+// https://stackoverflow.com/questions/1008019/c-singleton-design-pattern
+// Daemon Class should be singleton just to make things nice
+// just do it don't think
 int main(int ac, char **av) {
     // check no args
     if (ac != 1) {
