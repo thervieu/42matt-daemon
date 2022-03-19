@@ -5,6 +5,8 @@ Tintin_reporter logger = Tintin_reporter();
 void signal(int sig) {
     logger.log("Signal handler.");
     logger.log("Quitting.");
+    int fd = fopen("matt-daemon.lock", "w");
+    flock(fd, LOCK_UN);
     std::remove("matt-daemon.lock");
 }
 
@@ -36,9 +38,9 @@ void daemon_loop(void *p) {
     }
 }
 
-void create_adn_lock_file(void) {
+void create_and_lock_file(void) {
     int fd = fopen("matt-daemon.lock", "w");
-    flock(fd, EX_LOCK);
+    flock(fd, LOCK_EX);
 }
 
 void locked() {
