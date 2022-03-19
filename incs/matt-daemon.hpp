@@ -16,4 +16,4 @@
 // my classes
 #include "Tintin_reporter.hpp"
 
-std::string     formatString(std::string type, std::string str);
+std::string     logFormat(std::string type, std::string str);

@@ -13,5 +13,8 @@ class Tintin_reporter {
         Tintin_reporter(const Tintin_reporter &rhs);
         ~Tintin_reporter(void);
 
+        void newLog(void);
+        FILE *getFd(void);
+
         void    log(std::string);
 };
