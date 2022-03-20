@@ -30,7 +30,14 @@ int main(int ac, char **av) {
     if (pid < 0) exit(1);
     if (pid > 0) exit(0);
     if (chdir("/") < 0) exit(1);
-
+    char buffer[256];
+    if (getcwd(buffer, sizeof(buffer)) != NULL) {
+        printf("Current working directory : %s\n", buffer);
+    }
+    else {
+       printf("getcwd() error");
+       return 1;
+   }
     Daemon::getInstance()->serverLoop();
     return (0);
 }

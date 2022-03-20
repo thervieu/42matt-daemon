@@ -60,8 +60,14 @@ std::string     logFormat(std::string type, std::string str) {
 
 void    Tintin_reporter::log(std::string type, std::string str) {
     std::string formatted = logFormat(type, str);
-    if (this->ofs.is_open() == false)
+    printf("formatted : |%s|\n", formatted.c_str());
+    if (this->ofs.is_open() == false) {
+        printf("not opened\n\n");
         this->ofs.open("./var/log/matt_daemon/matt_daemon.log", std::ios::out | std::ios::app);
-    this->ofs << formatted;
+    }
+    if (this->ofs.is_open() == true) {
+        printf("write to ofs\n\n");
+        this->ofs << formatted << std::endl;
+    }
 }
 

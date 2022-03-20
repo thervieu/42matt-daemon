@@ -14,11 +14,11 @@ Daemon::Daemon(void) {
     this->logger.log("INFO", "Creating server.");
 
     this->clients = std::vector<int>(CLIENT_NB, 0);
-
     this->lock_fd = open("/var/lock/matt-daemon.lock", O_CREAT, 0666);
-    if (flock(this->lock_fd, LOCK_EX)) { // lock file
+    if (flock(this->lock_fd, LOCK_EX| LOCK_NB)) { // lock file
         close(this->lock_fd);
         this->logger.log("ERROR", "File locked");
+        exit(1)
     }
 
     /******         socket          ******/
@@ -33,19 +33,19 @@ Daemon::Daemon(void) {
         close(this->lock_fd);
         this->logger.log("ERROR", "Could not create socket.");
         this->logger.log("INFO", "Quitting.");
-        exit(-1);
+        exit(1);
     }
     if (bind(sock_fd, (const struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
         close(this->lock_fd);
         this->logger.log("ERROR", "Could not bind socket to server.");
         this->logger.log("INFO", "Quitting.");
-        exit(-2);
+        exit(1);
     }
     if (listen(sock_fd, CLIENT_NB) < 0) {
         close(this->lock_fd);
         this->logger.log("ERROR", "Socket could not listen to port 4242.");
         this->logger.log("INFO", "Quitting.");
-        exit(-3);
+        exit(1);
     }
 
     for (int i = 1; i < 32; i++) {
@@ -68,7 +68,13 @@ Daemon &Daemon::operator=(const Daemon &rhs) {
 }
 
 Daemon::~Daemon(void) {
+    this->logger.log("INFO", "Quitting.");
+    for (int i = 0; i < CLIENT_NB; i++) {
+        if (this->clients[i] != 0)
+            close(this->clients[i]);
+    }
     close(this->lock_fd);
+    close(this->sock_fd);
 }
 
 void    Daemon::acceptClient(void) {
@@ -84,6 +90,7 @@ void    Daemon::acceptClient(void) {
     for (i = 0; i < CLIENT_NB; i++) {
         if (this->clients[i] == 0)
             this->clients[i] = client_fd;
+            break ;
     }
     if (i != CLIENT_NB)
         this->nfds = (client_fd > this->nfds) ? client_fd : this->nfds;
