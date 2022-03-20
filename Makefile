@@ -1,13 +1,12 @@
-*********************************************************************** #
-
 NAME =	Matt-daemon
 
 SRCS =	matt-daemon.cpp		\
+		Daemon.cpp			\
 		Tintin_reporter.cpp
 
 SRCS_DIR = ./srcs/
 
-INCS = ./incs/matt-daemon.hpp
+INCS = ./incs/Daemon.hpp
 
 FLAGS =	-Wall -Wextra -Werror -std=c++98
 
@@ -17,11 +16,10 @@ OBJS = $(addprefix $(OBJS_DIR),  $(OBJ))
 
 OBJS_DIR =	objs/
 
-PRINT_REQ_AND_RESP = 0
 
 $(OBJS_DIR)%.o: $(SRCS_DIR)%.cpp $(INCS)
 	@mkdir -p $(OBJS_DIR)
-	@clang++ -D PRINT_VALUE=$(PRINT_REQ_AND_RESP) $(FLAGS) -c  $< -o $@
+	@clang++ $(FLAGS) -c  $< -o $@
 	@echo "Compiling $<"
 
 $(NAME): $(OBJS)

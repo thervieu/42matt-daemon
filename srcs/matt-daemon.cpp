@@ -1,16 +1,17 @@
-#include "../incs/matt-daemon.hpp"
+#include "../incs/Daemon.hpp"
 
 void usage() {
     printf("Just launch the exec as root w/o args.\n./Matt-Daemon\n\n");
     printf("If already launched once before, you will receive an error. This is normal behaviour\n");
 }
 
-Daemon * Daemon::instance = 0;
+Daemon *Daemon::instance = 0;
 
 // https://stackoverflow.com/questions/1008019/c-singleton-design-pattern
 // Daemon Class should be singleton just to make things nice
 // just do it don't think
 int main(int ac, char **av) {
+    (void)av;
     // check no args
     if (ac != 1) {
         usage();
