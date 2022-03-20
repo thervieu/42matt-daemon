@@ -1,28 +1,19 @@
 #include "../incs/Tintin_reporter.hpp"
 
 Tintin_reporter::Tintin_reporter(void) {
-    this->file_log_fd = fopen("/var/log/matt_daemon/matt-daemon.log", "a");
-}
-
-Tintin_reporter::Tintin_reporter(FILE * fd) {
-    this->file_log_fd = fd;
+    this->ofs.open("./var/log/matt_daemon/matt_daemon.log", ios::out | ios::app)
 }
 
 Tintin_reporter::Tintin_reporter(const Tintin_reporter &rhs) {
-    this->file_log_fd = rhs.file_log_fd;
+    *this = rhs
+}
+
+Tintin_reporter &Tintin_reporter::operator=(const Tintin_reporter &rhs) {
+
 }
 
 Tintin_reporter::~Tintin_reporter(void) {
    fclose(this->file_log_fd);
-}
-
-void Tintin_reporter::newLog(void) {
-    fclose("/var/log/matt_daemon/matt-daemon.log");
-    this->file_log_fd = fopen("/var/log/matt_daemon/matt-daemon.log", "w");
-}
-
-FILE *Tintin_reporter::getFd(void) {
-    return this->file_log_fd;
 }
 
 // [11/01/2016-14:34:58] [ INFO ] - Matt_daemon: Started.
@@ -52,7 +43,6 @@ FILE *Tintin_reporter::getFd(void) {
 // [17/01/2016-16:36:47] [ INFO ] - Matt_daemon: Request quit.
 // [17/01/2016-16:36:47] [ INFO ] - Matt_daemon: Quitting.
 
-// [ DD / MM / YYYY - HH : MM : SS])
 std::string     logFormat(std::string type, std::string str) {
     std::string str("");
 
