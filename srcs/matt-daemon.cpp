@@ -29,15 +29,10 @@ int main(int ac, char **av) {
     pid_t pid = fork();
     if (pid < 0) exit(1);
     if (pid > 0) exit(0);
-    if (chdir("/") < 0) exit(1);
-    char buffer[256];
-    if (getcwd(buffer, sizeof(buffer)) != NULL) {
-        printf("Current working directory : %s\n", buffer);
+    if (chdir("/") < 0) {
+        printf("Error: chdir(\"/\") failed\n");
+        exit(1);
     }
-    else {
-       printf("getcwd() error");
-       return 1;
-   }
     Daemon::getInstance()->serverLoop();
     return (0);
 }

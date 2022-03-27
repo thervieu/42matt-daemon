@@ -8,7 +8,7 @@
 #include <signal.h>
 #include <sstream>
 
-#define CLIENT_NB 5
+#define CLIENT_NB 3
 
 class Daemon {
     private:
@@ -26,14 +26,15 @@ class Daemon {
         Daemon &operator=(const Daemon &rhs);
         ~Daemon(void);
 
-        static Daemon *getInstance(void) {
-            return (!instance ? new Daemon : instance);
+        Tintin_reporter     getReporter()   { return logger; }
+        int                 getLock()       { return lock_fd; }
+        static Daemon       *getInstance(void) {
+            instance = !instance ? new Daemon : instance;
+            return (instance);
         }
 
-        void    acceptClient(void);
-        void    serverLoop(void);
-        void    handleClients(void);
-        Tintin_reporter    getReporter() { return logger; }
-        int     getLock() { return lock_fd; }
+        void                acceptClient(void);
+        void                serverLoop(void);
+        void                handleClients(void);
 
 };
