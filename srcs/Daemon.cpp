@@ -142,7 +142,8 @@ void    Daemon::handleClients(void) {
                     exit(0);
                 }
                 else {
-                    buffer[strlen(buffer) - 1] = '\0';std::ostringstream convert;
+                    buffer[strlen(buffer) - 1] = '\0';
+                    std::ostringstream convert;
                     convert << this->clients[i];
                     this->logger.log("LOG", "client " + convert.str() + ": " + buffer);
                     break ;
