@@ -33,8 +33,9 @@ class Daemon {
             return (instance);
         }
 
-        void                acceptClient(void);
+        void                initServer(void);
         void                serverLoop(void);
+        void                acceptClient(void);
         void                handleClients(void);
 
 };

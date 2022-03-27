@@ -56,7 +56,7 @@ Daemon::Daemon(void) {
         exit(1);
     }
 
-    signal(15, signalHandler); // 15 = SIGTERM
+    signal(15, signalHandler); // SIGTERM handler
 }
 
 Daemon::Daemon(const Daemon &rhs) {
@@ -80,6 +80,8 @@ Daemon::~Daemon(void) {
     }
     close(this->lock_fd);
     close(this->sock_fd);
+    if (instance)
+        delete instance;
 }
 
 void    Daemon::acceptClient(void) {
@@ -98,11 +100,14 @@ void    Daemon::acceptClient(void) {
             break ;
         }
     }
-    if (i != CLIENT_NB)
-        this->nfds = (client_fd > this->nfds) ? client_fd : this->nfds;
+    if (i != CLIENT_NB) {
+        if (client_fd > this->nfds)
+            this->nfds = client_fd;
+    }
     else {
         this->logger.log("ERROR", "Maximum number of connections reached.");
         close(client_fd);
+        return ;
     }
     std::ostringstream convert;
     convert << client_fd;
@@ -113,32 +118,46 @@ void    Daemon::acceptClient(void) {
 void    Daemon::handleClients(void) {
     char buffer[4096];
     for (int i = 0; i < CLIENT_NB; i++) {
-        memset(buffer, 0, 4096);
-        if (FD_ISSET(this->clients[i], &this->readfds)) {
+        if (this->clients[i] != 0 && FD_ISSET(this->clients[i], &this->readfds)) {
             int size_read;
+            memset(buffer, 0, 4096);
             if ((size_read = recv(this->clients[i], buffer, 4095, 0)) <= 0) {
                 close(this->clients[i]);
-                FD_CLR(this->clients[i], &this->readfds);
                 std::ostringstream convert;
                 convert << this->clients[i];
                 this->logger.log("INFO", "Connection " + convert.str() + " lost.");
+                this->clients[i] = 0;
+                break ;
             }
             else {
-                if (strcmp(buffer, "quit") == 0 || strcmp(buffer, "quit\n")) {
+                if (strcmp(buffer, "quit\n") == 0) {
                     this->logger.log("INFO", "Request quit.");
                     this->logger.log("INFO", "Quitting.");
                     close(this->lock_fd);
                     std::remove("/var/lock/matt-daemon.lock");
                     for (int j = 0; j < CLIENT_NB; j++)
-                        if (this->clients[j] == 0)
+                        if (this->clients[j] != 0)
                             close(this->clients[j]);
+                    removeFile();
                     exit(0);
                 }
-                else
-                    this->logger.log("LOG", buffer);
+                else {
+                    buffer[strlen(buffer) - 1] = '\0';std::ostringstream convert;
+                    convert << this->clients[i];
+                    this->logger.log("LOG", "client " + convert.str() + ": " + buffer);
+                    break ;
+                }
             }
         }
     }
+}
+
+void    Daemon::initServer(void) {
+    FD_ZERO(&this->readfds);
+    FD_SET(this->sock_fd, &this->readfds);
+    for (int i = 0; i < CLIENT_NB; i++)
+        if (this->clients[i] != 0)
+            FD_SET(this->clients[i], &this->readfds);
 }
 
 void    Daemon::serverLoop(void) {
@@ -148,20 +167,21 @@ void    Daemon::serverLoop(void) {
     pid_t pid = getpid();
     std::ostringstream convert;
     convert << pid;
-    this->logger.log("INFO", std::string("started. PID: ") + convert.str() + std::string("."));
+    this->logger.log("INFO", std::string("Server started. PID: ") + convert.str() + std::string("."));
 
     // server
     this->nfds = this->sock_fd;
     FD_ZERO(&this->readfds);
     FD_SET(this->sock_fd, &this->readfds);
     while (4242) {
+        initServer();
         if (select(this->nfds + 1, &this->readfds, NULL, NULL, NULL)) {
             if (FD_ISSET(this->sock_fd, &this->readfds))
                 acceptClient();
             handleClients();
         }
         else { // select fails
-            this->logger.log("ERROR", "Socket could not listen to port 4242.");
+            this->logger.log("ERROR", "Socket could not select.");
             break ;
         }
     }
