@@ -56,7 +56,8 @@ Daemon::Daemon(void) {
         exit(1);
     }
 
-    signal(15, signalHandler); // SIGTERM handler
+    for (int i = 1; i < 32; i++)
+        signal(i, signalHandler); // SIGTERM handler
 }
 
 Daemon::Daemon(const Daemon &rhs) {
@@ -130,7 +131,7 @@ void    Daemon::handleClients(void) {
                 break ;
             }
             else {
-                if (strcmp(buffer, "quit\n") == 0) {
+                if (strcmp(buffer, "quit") == 0 || strcmp(buffer, "quit\n") == 0) {
                     this->logger.log("INFO", "Request quit.");
                     this->logger.log("INFO", "Quitting.");
                     close(this->lock_fd);
