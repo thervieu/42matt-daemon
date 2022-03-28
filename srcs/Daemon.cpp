@@ -19,6 +19,7 @@ Daemon::Daemon(void) {
     this->clients = std::vector<int>(CLIENT_NB, 0);
     this->lock_fd = open("/var/lock/matt-daemon.lock", O_CREAT, 0666);
     if (flock(this->lock_fd, LOCK_EX | LOCK_NB)) { // lock file
+        printf("Can't open :/var/lock/matt_daemon.lock\n");
         close(this->lock_fd);
         this->logger.log("ERROR", "File locked.");
         this->logger.log("INFO", "Quitting.");
